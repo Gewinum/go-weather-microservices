@@ -1,0 +1,54 @@
+services:
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    hostname: "rabbitmq"
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    labels:
+      NAME: "rabbitmq"
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/apps/postgres:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=weather
+  restapi-server:
+    build:
+      dockerfile: ./restapi-server/dev.Dockerfile
+      additional_contexts:
+        main: ./restapi-server
+        common: ./common
+    restart: always
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - GIN_MODE=debug
+    ports:
+      - 4000:4000
+    volumes:
+      - ./restapi-server/docker.yml:/out/config.yml
+  weather-service:
+    build:
+      dockerfile: ./weather-service/dev.Dockerfile
+      additional_contexts:
+        main: ./weather-service
+        common: ./common
+    restart: always
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - GIN_MODE=debug
+    volumes:
+      - ./weather-service/docker.yml:/out/config.yml
