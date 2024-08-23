@@ -1,10 +1,14 @@
 package weather
 
 type RequestWeatherInformation struct {
-	City string `json:"city"`
+	Lat float64 `json:"lat"`
+	Lon float64 `json:"lon"`
 }
 
 type ResponseWeatherInformation struct {
-	Temperature float64 `json:"temperature"`
-	Humidity    float64 `json:"humidity"`
+	WeatherCode   float64 `json:"weather_code"`
+	Temperature   float64 `json:"temperature"`
+	Time          int64   `json:"time"`
+	WindDirection float64 `json:"wind_direction"`
+	WindSpeed     float64 `json:"wind_speed"`
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/Gewinum/go-weather-microservices/restapi-server/internal/client"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 type WeatherHandler struct {
@@ -16,12 +17,27 @@ func NewWeatherHandler(wc *client.WeatherClient) *WeatherHandler {
 }
 
 func (h *WeatherHandler) HandleForecast(c *gin.Context) {
-	city, found := c.GetQuery("city")
+	latStr, found := c.GetQuery("lat")
 	if !found {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
-	info, err := h.wc.RequestWeatherInformation(weather.RequestWeatherInformation{City: city})
+	lonStr, found := c.GetQuery("lon")
+	if !found {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	lat, err := strconv.ParseFloat(latStr, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	lon, err := strconv.ParseFloat(lonStr, 64)
+	if err != nil {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	info, err := h.wc.RequestWeatherInformation(weather.RequestWeatherInformation{Lat: lat, Lon: lon})
 	if err != nil {
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return

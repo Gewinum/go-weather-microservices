@@ -24,7 +24,10 @@ func NewDependency() *Dependency {
 	weatherClient := client.NewWeatherClient(cfg.RabbitMQ)
 
 	weatherHandler := handlers.NewWeatherHandler(weatherClient)
+	prometheusHandler := handlers.NewPrometheusHandler()
 	e := gin.Default()
+	e.Use(prometheusHandler.RPSMiddleware)
+	e.Handle("GET", "/metrics", prometheusHandler.HandleMetrics)
 	e.Handle("GET", "/", weatherHandler.HandleForecast)
 
 	return &Dependency{

@@ -3,7 +3,7 @@ services:
     image: "rabbitmq:3-management"
     hostname: "rabbitmq"
     environment:
-      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_ERLANG_COOKIE: "rabbitmq-prometheus"
       RABBITMQ_DEFAULT_USER: "rabbitmq"
       RABBITMQ_DEFAULT_PASS: "rabbitmq"
       RABBITMQ_DEFAULT_VHOST: "/"
@@ -24,7 +24,7 @@ services:
       - POSTGRES_DB=weather
   restapi-server:
     build:
-      dockerfile: ./restapi-server/dev.Dockerfile
+      dockerfile: ./docker/go/dev.Dockerfile
       additional_contexts:
         main: ./restapi-server
         common: ./common
@@ -37,10 +37,10 @@ services:
     ports:
       - 4000:4000
     volumes:
-      - ./restapi-server/docker.yml:/out/config.yml
+      - ./restapi-server/docker.yml:/config.yml
   weather-service:
     build:
-      dockerfile: ./weather-service/dev.Dockerfile
+      dockerfile: ./docker/go/dev.Dockerfile
       additional_contexts:
         main: ./weather-service
         common: ./common
@@ -51,4 +51,31 @@ services:
     environment:
       - GIN_MODE=debug
     volumes:
-      - ./weather-service/docker.yml:/out/config.yml
+      - ./weather-service/docker.yml:/config.yml
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./apps/prometheus:/etc/prometheus
+      - prom_data:/prometheus
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana
+    volumes:
+      - ./apps/grafana:/etc/grafana/provisioning/datasources
+      - grafana_data:/var/lib/grafana
+
+volumes:
+  prom_data:
+  grafana_data:

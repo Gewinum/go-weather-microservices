@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/Gewinum/go-weather-microservices/restapi-server/internal/dependency"
+	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -19,4 +20,5 @@ func main() {
 		}
 	}()
 	<-interruption.Done()
+	log.Println("Shutting down")
 }
