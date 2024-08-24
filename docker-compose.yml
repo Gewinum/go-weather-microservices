@@ -18,6 +18,10 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
   restapi-server:
     build:
       dockerfile: ./docker/go/Dockerfile
@@ -26,7 +30,7 @@ services:
         common: ./common
     restart: always
     depends_on:
-      postgres:
+      redis:
         condition: service_started
       rabbitmq:
         condition: service_healthy
@@ -44,7 +48,7 @@ services:
         common: ./common
     restart: always
     depends_on:
-      postgres:
+      redis:
         condition: service_started
       rabbitmq:
         condition: service_healthy
