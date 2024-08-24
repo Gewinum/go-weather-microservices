@@ -12,16 +12,12 @@ services:
       - "5672:5672"
     labels:
       NAME: "rabbitmq"
-  postgres:
-    image: postgres:16-alpine
-    ports:
-      - 5432:5432
-    volumes:
-      - ~/apps/postgres:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=user
-      - POSTGRES_DB=weather
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
   restapi-server:
     build:
       dockerfile: ./docker/go/dev.Dockerfile
@@ -30,8 +26,10 @@ services:
         common: ./common
     restart: always
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     environment:
       - GIN_MODE=debug
     ports:
@@ -46,8 +44,10 @@ services:
         common: ./common
     restart: always
     depends_on:
-      - postgres
-      - rabbitmq
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
     environment:
       - GIN_MODE=debug
     volumes:
