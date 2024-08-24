@@ -1,4 +1,4 @@
-FROM golang:1.23 as build-env
+FROM golang:1.23.0-alpine3.20 AS build-env
 
 WORKDIR /app
 
@@ -13,7 +13,7 @@ RUN go mod download
 COPY --from=main . .
 RUN go build -o /out/app ./cmd/app/main.go
 
-FROM debian:buster
+FROM alpine:3.20
 
 WORKDIR /
 COPY --from=build-env /out /
